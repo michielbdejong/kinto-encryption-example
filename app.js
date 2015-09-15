@@ -53,6 +53,9 @@ const createTransformer = (aesKey) => {
           new Uint8Array(recordArrayBuffer)));
 
       return record;
+    }, () => {
+      record.undecryptable = true;
+      return record;
     });
   };
 
