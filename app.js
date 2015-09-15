@@ -33,26 +33,23 @@ const createTransformer = (aesKey) => {
 
     return window.crypto.subtle.encrypt({ name: 'AES-CBC', iv: IV }, aesKey,
         cleartext).then(ciphertext => {
-      record.payload = JSON.stringify({
+      return {
+        id: record.id,
         ciphertext: byteArrayToBase64String(new Uint8Array(ciphertext)),
         IV: byteArrayToBase64String(IV)
-      });
-      return record;
+      };
     });
   };
 
   const decode = (record) => {
-    const payloadStrings = JSON.parse(record.payload);
-    const ciphertext = base64StringToByteArray(payloadStrings.ciphertext);
-    const IV = base64StringToByteArray(payloadStrings.IV);
+    const ciphertext = base64StringToByteArray(record.ciphertext);
+    const IV = base64StringToByteArray(record.IV);
 
     return crypto.subtle.decrypt({ name: 'AES-CBC', iv: IV }, aesKey,
         ciphertext).then(recordArrayBuffer => {
 
-      record.payload = JSON.parse(String.fromCharCode.apply(null,
+      return JSON.parse(String.fromCharCode.apply(null,
           new Uint8Array(recordArrayBuffer)));
-
-      return record;
     }, () => {
       record.undecryptable = true;
       return record;
@@ -66,16 +63,16 @@ const createTransformer = (aesKey) => {
 };
 
 // Kinto collection:
-const createCollection = (transformer, dbPrefix) => {
+const createCollection = (transformer, testRun, instanceNo) => {
   const kinto = new Kinto({
-    dbPrefix: dbPrefix,
+    dbPrefix: `${testRun}-${instanceNo}`,
     remote: 'https://kinto.dev.mozaws.net/v1/',
     headers: {
       Authorization: 'Basic ' + btoa('public-demo:s3cr3t')
     }
   });
 
-  return kinto.collection('foo', {
+  return kinto.collection(`kinto-encrypter-les-donnees-${testRun}`, {
     remoteTransformers: [ transformer ]
   });
 };
@@ -86,9 +83,9 @@ const prepare = () => {
     return createTransformer(aesKey);
   }).then(transformer => {
     // Create two fresh empty Kinto instances for testing:
-    const prefix = new Date().getTime().toString();
-    coll1 = createCollection(transformer, `${prefix}-1`);
-    coll2 = createCollection(transformer, `${prefix}-2`);
+    const testRun = new Date().getTime().toString();
+    coll1 = createCollection(transformer, testRun, 1);
+    coll2 = createCollection(transformer, testRun, 2);
   });
 };
 
