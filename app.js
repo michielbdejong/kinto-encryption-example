@@ -53,6 +53,9 @@ const createTransformer = (aesKey) => {
     }, () => {
       record.undecryptable = true;
       return record;
+    }, () => {
+      record.undecryptable = true;
+      return record;
     });
   };
 
