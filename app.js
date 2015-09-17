@@ -23,7 +23,7 @@ const byteArrayToBase64String = (buffer) => {
 const generateAesKey = () => {
   // See http://www.w3.org/TR/WebCryptoAPI/#examples-symmetric-encryption
   return window.crypto.subtle.generateKey({ name: 'AES-CBC', length: 128 },
-       false, ['encrypt', 'decrypt']);
+      false, ['encrypt', 'decrypt']);
 };
 
 const createTransformer = (aesKey) => {
@@ -95,8 +95,8 @@ const prepare = () => {
 const syncUp = () => {
   // Use first Kinto instance to demonstrate encryption:
   return coll1.create({
-      URL: 'http://www.w3.org/TR/WebCryptoAPI/',
-      name: 'Web Cryptography API'
+    URL: 'http://www.w3.org/TR/WebCryptoAPI/',
+    name: 'Web Cryptography API'
   }).then(() => {
     return coll1.sync();
   }).then(syncResults => {
@@ -117,5 +117,5 @@ const go = () => {
     return syncUp();
   }).then(() => {
     return syncDown();
-  }).then(a => console.log('Success', a), b => console.log('Failure', b));
+  }).then(a => console.log('Success', a), b => console.error('Failure', b));
 };
